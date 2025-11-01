@@ -69,11 +69,7 @@ class GetWeekCalendarUseCase @Inject constructor(
             )
         }
 
-        val endOfWeekInstant = startOfWeek.toInstant(TimeZone.currentSystemDefault())
-            .plus(6, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
-        val endOfWeek = endOfWeekInstant.toLocalDateTime(TimeZone.currentSystemDefault())
-        val weekRange = "${startOfWeek.year}年${startOfWeek.monthNumber}月${startOfWeek.dayOfMonth}日 - " +
-                       "${endOfWeek.monthNumber}月${endOfWeek.dayOfMonth}日"
+        val weekRange = "${startOfWeek.year}年${startOfWeek.monthNumber}月${startOfWeek.dayOfMonth}日"
 
         return WeekCalendarModel(
             days = days,

@@ -129,7 +129,6 @@ data class PermissionState(
     val allPermissionsGranted: Boolean
         get() = hasNotificationPermission &&
                 hasExactAlarmPermission &&
-                isBatteryOptimizationIgnored &&
                 hasBootPermission
 
     /**
@@ -139,7 +138,6 @@ data class PermissionState(
         get() = buildList {
             if (!hasNotificationPermission) add("通知权限")
             if (!hasExactAlarmPermission) add("精确闹钟权限")
-            if (!isBatteryOptimizationIgnored) add("电池优化白名单")
             if (!hasBootPermission) add("开机启动权限")
         }
 }

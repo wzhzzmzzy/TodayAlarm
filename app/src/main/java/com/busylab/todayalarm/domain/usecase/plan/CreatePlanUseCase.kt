@@ -3,6 +3,7 @@ package com.busylab.todayalarm.domain.usecase.plan
 import com.busylab.todayalarm.domain.model.Plan
 import com.busylab.todayalarm.domain.model.RepeatType
 import com.busylab.todayalarm.domain.repository.PlanRepository
+import com.busylab.todayalarm.system.alarm.AlarmScheduler
 import kotlinx.datetime.*
 import java.util.UUID
 import javax.inject.Inject
@@ -10,7 +11,8 @@ import javax.inject.Singleton
 
 @Singleton
 class CreatePlanUseCase @Inject constructor(
-    private val planRepository: PlanRepository
+    private val planRepository: PlanRepository,
+    private val alarmScheduler: AlarmScheduler
 ) {
     suspend operator fun invoke(
         title: String,
@@ -46,7 +48,10 @@ class CreatePlanUseCase @Inject constructor(
                 updatedAt = currentTime
             )
 
+            // 保存并调度
             planRepository.insertPlan(plan)
+            alarmScheduler.scheduleAlarm(plan)
+
             Result.success(plan.id)
         } catch (e: Exception) {
             Result.failure(e)

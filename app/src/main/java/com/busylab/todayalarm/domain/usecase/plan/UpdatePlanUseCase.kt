@@ -6,6 +6,7 @@ import com.busylab.todayalarm.domain.exception.BusinessException
 import com.busylab.todayalarm.domain.model.ModelMapper.toDomainModel
 import com.busylab.todayalarm.domain.model.PlanUiModel
 import com.busylab.todayalarm.domain.repository.PlanRepository
+import com.busylab.todayalarm.system.alarm.AlarmScheduler
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -15,7 +16,8 @@ import javax.inject.Singleton
 
 @Singleton
 class UpdatePlanUseCase @Inject constructor(
-    private val planRepository: PlanRepository
+    private val planRepository: PlanRepository,
+    private val alarmScheduler: AlarmScheduler
 ) {
     suspend operator fun invoke(planUiModel: PlanUiModel): Result<Unit> {
         return try {
@@ -29,6 +31,14 @@ class UpdatePlanUseCase @Inject constructor(
 
             val plan = planUiModel.toDomainModel()
             planRepository.updatePlan(plan)
+
+            // 根据状态调度或取消闹钟
+            if (plan.isActive) {
+                alarmScheduler.scheduleAlarm(plan)
+            } else {
+                alarmScheduler.cancelAlarm(plan.id)
+            }
+
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -41,6 +51,14 @@ class UpdatePlanUseCase @Inject constructor(
                 Result.failure(BusinessException.InvalidInputException("计划ID不能为空"))
             } else {
                 planRepository.updatePlanActiveStatus(planId, isActive)
+                val plan = planRepository.getPlanById(planId)
+                plan?.let {
+                    if (isActive) {
+                        alarmScheduler.scheduleAlarm(it)
+                    } else {
+                        alarmScheduler.cancelAlarm(it.id)
+                    }
+                }
                 Result.success(Unit)
             }
         } catch (e: Exception) {
@@ -84,6 +102,14 @@ class UpdatePlanUseCase @Inject constructor(
             )
 
             planRepository.updatePlan(updatedPlan)
+
+            // 根据状态调度或取消闹钟
+            if (updatedPlan.isActive) {
+                alarmScheduler.scheduleAlarm(updatedPlan)
+            } else {
+                alarmScheduler.cancelAlarm(updatedPlan.id)
+            }
+
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(BusinessException.DatabaseException("更新计划失败", e))

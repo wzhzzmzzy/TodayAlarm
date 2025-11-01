@@ -91,6 +91,7 @@ sealed interface HomeUiEvent : UiEvent {
     data class DateSelected(val date: LocalDate) : HomeUiEvent
     object RefreshData : HomeUiEvent
     data class WeekChanged(val weekOffset: Int) : HomeUiEvent
+    object DebugNotification : HomeUiEvent
     data class ShowSnackbar(val message: String) : HomeUiEvent
     data class ShowError(val error: String) : HomeUiEvent
     object NavigateBack : HomeUiEvent
