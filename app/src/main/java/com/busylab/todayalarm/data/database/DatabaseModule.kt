@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.busylab.todayalarm.data.database.dao.PlanDao
 import com.busylab.todayalarm.data.database.dao.TodoItemDao
+import com.busylab.todayalarm.data.database.migration.TodoMigrations
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,6 +24,7 @@ object DatabaseModule {
             AppDatabase::class.java,
             AppDatabase.DATABASE_NAME
         )
+            .addMigrations(TodoMigrations.MIGRATION_1_2)
             .fallbackToDestructiveMigration(false)
             .build()
     }

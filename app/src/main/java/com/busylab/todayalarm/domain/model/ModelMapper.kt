@@ -44,7 +44,7 @@ object ModelMapper {
         )
     }
 
-    fun TodoItem.toUiModel(userPreferences: UserPreferences): TodoItemUiModel {
+    fun TodoItem.toUiModel(userPreferences: UserPreferences = UserPreferences()): TodoItemUiModel {
         return TodoItemUiModel(
             id = id,
             planId = planId,

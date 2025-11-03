@@ -11,7 +11,7 @@ import com.busylab.todayalarm.ui.screens.AddPlanScreen
 import com.busylab.todayalarm.ui.screens.EditPlanScreen
 import com.busylab.todayalarm.ui.screens.HomeScreen
 import com.busylab.todayalarm.ui.screens.PlanListScreen
-import com.busylab.todayalarm.ui.screens.TodoListScreen
+import com.busylab.todayalarm.ui.screens.SimpleTodoListScreen
 
 @Composable
 fun TodayAlarmNavigation(
@@ -82,10 +82,7 @@ fun TodayAlarmNavigation(
 
         // 待办列表页面
         composable(Screen.TodoList.route) {
-            TodoListScreen(
-                onNavigateBack = {
-                    navController.popBackStack()
-                }
+            SimpleTodoListScreen(
             )
         }
     }

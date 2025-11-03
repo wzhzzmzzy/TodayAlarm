@@ -56,7 +56,7 @@ class TodoRepositoryImpl @Inject constructor(
     override suspend fun markTodoItemCompleted(id: String, completedAt: LocalDateTime) {
         val timeZone = TimeZone.currentSystemDefault()
         val timestamp = completedAt.toInstant(timeZone).toEpochMilliseconds()
-        todoItemDao.updateTodoItemCompletionStatus(id, true, timestamp)
+        todoItemDao.updateTodoItemCompletionStatus(id, true, timestamp, "COMPLETED")
     }
 
     override suspend fun deleteCompletedTodosBefore(cutoffTime: LocalDateTime) {

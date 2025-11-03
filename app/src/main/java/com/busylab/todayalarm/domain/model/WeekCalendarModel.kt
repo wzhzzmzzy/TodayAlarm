@@ -14,7 +14,7 @@ data class DayModel(
     val dayOfMonth: Int,
     val isToday: Boolean,
     val isCurrentMonth: Boolean,
-    val todoItems: List<TodoItemUiModel> = emptyList(),
+    val todoItems: List<TodoItem> = emptyList(),
     val plans: List<PlanUiModel> = emptyList(),
     val hasEvents: Boolean = false
 )

@@ -4,10 +4,11 @@ import com.busylab.todayalarm.data.datastore.UserPreferences
 import com.busylab.todayalarm.data.datastore.UserPreferencesDataStore
 import com.busylab.todayalarm.domain.model.DayModel
 import com.busylab.todayalarm.domain.model.PlanUiModel
-import com.busylab.todayalarm.domain.model.TodoItemUiModel
+import com.busylab.todayalarm.domain.model.TodoItem
 import com.busylab.todayalarm.domain.model.WeekCalendarModel
 import com.busylab.todayalarm.domain.usecase.plan.GetPlansUseCase
-import com.busylab.todayalarm.domain.usecase.todo.GetTodoItemsUseCase
+import com.busylab.todayalarm.domain.usecase.todo.GetTodoItemsUseCaseNew
+import com.busylab.todayalarm.domain.usecase.todo.TodoFilter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.datetime.*
@@ -17,13 +18,13 @@ import javax.inject.Singleton
 @Singleton
 class GetWeekCalendarUseCase @Inject constructor(
     private val getPlansUseCase: GetPlansUseCase,
-    private val getTodoItemsUseCase: GetTodoItemsUseCase,
+    private val getTodoItemsUseCase: GetTodoItemsUseCaseNew,
     private val userPreferencesDataStore: UserPreferencesDataStore
 ) {
     operator fun invoke(weekOffset: Int = 0): Flow<WeekCalendarModel> {
         return combine(
             getPlansUseCase.getPlansForWeek(weekOffset),
-            getTodoItemsUseCase.getTodoItemsForWeek(weekOffset),
+            getTodoItemsUseCase(GetTodoItemsUseCaseNew.Params(filter = TodoFilter.ALL)),
             userPreferencesDataStore.userPreferences
         ) { plans, todoItems, preferences ->
             createWeekCalendarModel(plans, todoItems, weekOffset, preferences)
@@ -32,7 +33,7 @@ class GetWeekCalendarUseCase @Inject constructor(
 
     private fun createWeekCalendarModel(
         plans: List<PlanUiModel>,
-        todoItems: List<TodoItemUiModel>,
+        todoItems: List<TodoItem>,
         weekOffset: Int,
         preferences: UserPreferences
     ): WeekCalendarModel {
@@ -54,7 +55,7 @@ class GetWeekCalendarUseCase @Inject constructor(
                 it.triggerTime.date == date.date
             }
             val dayTodoItems = todoItems.filter {
-                it.triggerTime.date == date.date
+                it.triggerTime == date.date
             }
 
             DayModel(

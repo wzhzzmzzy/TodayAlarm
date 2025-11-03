@@ -1,6 +1,9 @@
 package com.busylab.todayalarm.ui.components.calendar
 
 import androidx.compose.foundation.background
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -40,6 +44,7 @@ import com.busylab.todayalarm.domain.model.TodoItemUiModel
 import com.busylab.todayalarm.domain.model.WeekCalendarModel
 import com.busylab.todayalarm.ui.theme.TodayAlarmTheme
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 
 @Composable
 fun WeekCalendarView(
@@ -190,7 +195,7 @@ private fun DayRow(
                 day.todoItems.forEach { todo ->
                     EventItem(
                         title = todo.title,
-                        time = todo.formattedTime,
+                        time = formatTodoTime(todo.triggerTime),
                         isCompleted = todo.isCompleted,
                         color = if (todo.isCompleted)
                             MaterialTheme.colorScheme.outline
@@ -285,5 +290,13 @@ private fun WeekCalendarViewPreview() {
             onDateSelected = {},
             onWeekChanged = {}
         )
+    }
+}
+
+private fun formatTodoTime(timestamp: LocalDateTime): String {
+    return try {
+        String.format("%02d:%02d", timestamp.hour, timestamp.minute)
+    } catch (e: Exception) {
+        "00:00"
     }
 }

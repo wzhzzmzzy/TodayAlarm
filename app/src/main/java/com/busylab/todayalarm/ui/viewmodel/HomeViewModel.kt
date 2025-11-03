@@ -2,11 +2,14 @@ package com.busylab.todayalarm.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.busylab.todayalarm.data.mapper.TodoMapper.toDomainModel
+import com.busylab.todayalarm.domain.model.ModelMapper.toUiModel
 import com.busylab.todayalarm.domain.model.Plan
 import com.busylab.todayalarm.domain.model.RepeatType
 import com.busylab.todayalarm.domain.repository.PlanRepository
 import com.busylab.todayalarm.domain.usecase.calendar.GetWeekCalendarUseCase
-import com.busylab.todayalarm.domain.usecase.todo.GetTodoItemsUseCase
+import com.busylab.todayalarm.domain.usecase.todo.GetTodoItemsUseCaseNew
+import com.busylab.todayalarm.domain.usecase.todo.TodoFilter
 import com.busylab.todayalarm.system.alarm.AlarmScheduler
 import com.busylab.todayalarm.ui.state.HomeUiEvent
 import com.busylab.todayalarm.ui.state.HomeUiState
@@ -22,6 +25,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
@@ -33,7 +37,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getWeekCalendarUseCase: GetWeekCalendarUseCase,
-    private val getTodoItemsUseCase: GetTodoItemsUseCase,
+    private val getTodoItemsUseCase: GetTodoItemsUseCaseNew,
     private val planRepository: PlanRepository,
     private val alarmScheduler: AlarmScheduler
 ) : ViewModel() {
@@ -85,18 +89,18 @@ class HomeViewModel @Inject constructor(
             try {
                 combine(
                     getWeekCalendarUseCase(currentWeekOffset),
-                    getTodoItemsUseCase.getPendingTodoItems()
+                    getTodoItemsUseCase(GetTodoItemsUseCaseNew.Params(filter = TodoFilter.PENDING))
                 ) { weekCalendar, allTodos ->
                     val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
                     val selectedDate = _uiState.value.selectedDate ?: today
 
                     val todayTodos = allTodos.filter {
                         it.triggerTime.date == today
-                    }
+                    }.map { it.toUiModel() }
 
                     val selectedDateTodos = allTodos.filter {
                         it.triggerTime.date == selectedDate
-                    }
+                    }.map { it.toUiModel() }
 
                     HomeUiState(
                         weekCalendar = weekCalendar,
@@ -133,14 +137,14 @@ class HomeViewModel @Inject constructor(
             _uiState.value = currentState.copy(selectedDate = date)
 
             // 获取选中日期的待办事项
-            getTodoItemsUseCase.getPendingTodoItems()
+            getTodoItemsUseCase(GetTodoItemsUseCaseNew.Params(filter = TodoFilter.PENDING))
                 .catch { error ->
                     _uiEvent.emit(HomeUiEvent.ShowError("获取待办事项失败: ${error.message}"))
                 }
                 .collect { allTodos ->
                     val selectedDateTodos = allTodos.filter {
                         it.triggerTime.date == date
-                    }
+                    }.map { it.toUiModel() }
 
                     _uiState.value = _uiState.value.copy(
                         selectedDateTodos = selectedDateTodos
