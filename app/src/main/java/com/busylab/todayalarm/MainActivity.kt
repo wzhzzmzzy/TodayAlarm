@@ -40,9 +40,15 @@ class MainActivity : ComponentActivity() {
                     TodayAlarmApp()
                 } else {
                     PermissionRequestScreen(
-                        missingPermissions = permissionState.missingPermissions,
-                        onGrantPermissionClick = {
+                        permissionState = permissionState,
+                        onGoToNotificationSettings = {
                             permissionManager.openAppSettings(this)
+                        },
+                        onGoToExactAlarmSettings = {
+                            permissionManager.requestExactAlarmPermission(this)
+                        },
+                        onGoToBatteryOptimizationSettings = {
+                            permissionManager.requestIgnoreBatteryOptimization(this)
                         }
                     )
                 }

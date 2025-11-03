@@ -167,7 +167,7 @@ class HomeViewModel @Inject constructor(
             try {
                 val timeZone = TimeZone.currentSystemDefault()
                 val now = Clock.System.now()
-                val triggerTime = now.plus(5, DateTimeUnit.SECOND, timeZone)
+                val triggerTime = now.plus(60, DateTimeUnit.SECOND, timeZone)
                 val nowLocalDateTime = now.toLocalDateTime(timeZone)
 
                 // 创建一个调试用的计划
@@ -189,7 +189,7 @@ class HomeViewModel @Inject constructor(
                 alarmScheduler.scheduleAlarm(debugPlan)
 
                 // 显示成功消息
-                _uiEvent.emit(HomeUiEvent.ShowSnackbar("测试闹钟已安排在5秒后"))
+                _uiEvent.emit(HomeUiEvent.ShowSnackbar("测试闹钟已安排在60秒后"))
             } catch (e: Exception) {
                 _uiEvent.emit(HomeUiEvent.ShowError("安排调试闹钟失败: ${e.message}"))
             }
