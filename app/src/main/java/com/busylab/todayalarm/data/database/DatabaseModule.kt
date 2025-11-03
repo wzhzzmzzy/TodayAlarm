@@ -23,7 +23,7 @@ object DatabaseModule {
             AppDatabase::class.java,
             AppDatabase.DATABASE_NAME
         )
-            .fallbackToDestructiveMigration() // 开发阶段使用，生产环境需要提供迁移策略
+            .fallbackToDestructiveMigration(false)
             .build()
     }
 
