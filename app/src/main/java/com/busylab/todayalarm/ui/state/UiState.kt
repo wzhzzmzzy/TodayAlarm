@@ -11,9 +11,16 @@ import kotlinx.datetime.LocalDateTime
  * 主页UI状态
  */
 data class HomeUiState(
+    val isLoading: Boolean = false,
+    val error: String? = null
+)
+
+/**
+ * 周视图UI状态
+ */
+data class WeekViewUiState(
     val weekCalendar: WeekCalendarModel? = null,
     val selectedDate: LocalDate? = null,
-    val todayTodos: List<TodoItemUiModel> = emptyList(),
     val selectedDateTodos: List<TodoItemUiModel> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null
@@ -88,13 +95,22 @@ sealed interface UiEvent {
  * 主页UI事件
  */
 sealed interface HomeUiEvent : UiEvent {
-    data class DateSelected(val date: LocalDate) : HomeUiEvent
     object RefreshData : HomeUiEvent
-    data class WeekChanged(val weekOffset: Int) : HomeUiEvent
     object DebugNotification : HomeUiEvent
     data class ShowSnackbar(val message: String) : HomeUiEvent
     data class ShowError(val error: String) : HomeUiEvent
     object NavigateBack : HomeUiEvent
+}
+
+/**
+ * 周视图UI事件
+ */
+sealed interface WeekViewUiEvent : UiEvent {
+    data class DateSelected(val date: LocalDate) : WeekViewUiEvent
+    data class WeekChanged(val weekOffset: Int) : WeekViewUiEvent
+    object RefreshData : WeekViewUiEvent
+    data class ShowSnackbar(val message: String) : WeekViewUiEvent
+    data class ShowError(val error: String) : WeekViewUiEvent
 }
 
 /**

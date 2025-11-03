@@ -2,14 +2,9 @@ package com.busylab.todayalarm.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.busylab.todayalarm.data.mapper.TodoMapper.toDomainModel
-import com.busylab.todayalarm.domain.model.ModelMapper.toUiModel
 import com.busylab.todayalarm.domain.model.Plan
 import com.busylab.todayalarm.domain.model.RepeatType
 import com.busylab.todayalarm.domain.repository.PlanRepository
-import com.busylab.todayalarm.domain.usecase.calendar.GetWeekCalendarUseCase
-import com.busylab.todayalarm.domain.usecase.todo.GetTodoItemsUseCaseNew
-import com.busylab.todayalarm.domain.usecase.todo.TodoFilter
 import com.busylab.todayalarm.system.alarm.AlarmScheduler
 import com.busylab.todayalarm.ui.state.HomeUiEvent
 import com.busylab.todayalarm.ui.state.HomeUiState
@@ -36,8 +31,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val getWeekCalendarUseCase: GetWeekCalendarUseCase,
-    private val getTodoItemsUseCase: GetTodoItemsUseCaseNew,
     private val planRepository: PlanRepository,
     private val alarmScheduler: AlarmScheduler
 ) : ViewModel() {
@@ -48,28 +41,18 @@ class HomeViewModel @Inject constructor(
     private val _uiEvent = MutableSharedFlow<HomeUiEvent>()
     val uiEvent: SharedFlow<HomeUiEvent> = _uiEvent.asSharedFlow()
 
-    private var currentWeekOffset = 0
-
     init {
         loadData()
     }
 
     fun onEvent(event: HomeUiEvent) {
         when (event) {
-            is HomeUiEvent.DateSelected -> {
-                selectDate(event.date)
-            }
             is HomeUiEvent.RefreshData -> {
                 loadData()
             }
-            is HomeUiEvent.WeekChanged -> {
-                changeWeek(event.weekOffset)
-            }
-
             HomeUiEvent.DebugNotification -> {
                 debugAlarm()
             }
-
             HomeUiEvent.NavigateBack -> {
                 // Handled by UI layer
             }
@@ -87,39 +70,11 @@ class HomeViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
             try {
-                combine(
-                    getWeekCalendarUseCase(currentWeekOffset),
-                    getTodoItemsUseCase(GetTodoItemsUseCaseNew.Params(filter = TodoFilter.PENDING))
-                ) { weekCalendar, allTodos ->
-                    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-                    val selectedDate = _uiState.value.selectedDate ?: today
-
-                    val todayTodos = allTodos.filter {
-                        it.triggerTime.date == today
-                    }.map { it.toUiModel() }
-
-                    val selectedDateTodos = allTodos.filter {
-                        it.triggerTime.date == selectedDate
-                    }.map { it.toUiModel() }
-
-                    HomeUiState(
-                        weekCalendar = weekCalendar,
-                        selectedDate = selectedDate,
-                        todayTodos = todayTodos,
-                        selectedDateTodos = selectedDateTodos,
-                        isLoading = false,
-                        error = null
-                    )
-                }
-                .catch { error ->
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        error = error.message ?: "加载数据失败"
-                    )
-                }
-                .collect { newState ->
-                    _uiState.value = newState
-                }
+                // 简单的数据加载逻辑，主要用于初始化状态
+                _uiState.value = HomeUiState(
+                    isLoading = false,
+                    error = null
+                )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
@@ -129,34 +84,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun selectDate(date: LocalDate) {
-        viewModelScope.launch {
-            val currentState = _uiState.value
-
-            // 更新选中日期
-            _uiState.value = currentState.copy(selectedDate = date)
-
-            // 获取选中日期的待办事项
-            getTodoItemsUseCase(GetTodoItemsUseCaseNew.Params(filter = TodoFilter.PENDING))
-                .catch { error ->
-                    _uiEvent.emit(HomeUiEvent.ShowError("获取待办事项失败: ${error.message}"))
-                }
-                .collect { allTodos ->
-                    val selectedDateTodos = allTodos.filter {
-                        it.triggerTime.date == date
-                    }.map { it.toUiModel() }
-
-                    _uiState.value = _uiState.value.copy(
-                        selectedDateTodos = selectedDateTodos
-                    )
-                }
-        }
-    }
-
-    private fun changeWeek(weekOffset: Int) {
-        currentWeekOffset = weekOffset
-        loadData()
-    }
 
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)

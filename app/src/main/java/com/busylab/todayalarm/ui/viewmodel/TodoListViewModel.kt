@@ -11,17 +11,17 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * 简化的待办列表ViewModel
- * 只处理列表展示和完成状态切换
+ * 待办列表ViewModel
+ * 处理列表展示和完成状态切换
  */
 @HiltViewModel
-class SimpleTodoListViewModel @Inject constructor(
+class TodoListViewModel @Inject constructor(
     private val getTodoItemsUseCase: GetTodoItemsUseCaseNew,
     private val completeTodoItemUseCase: CompleteTodoItemUseCaseNew
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(SimpleTodoListUiState())
-    val uiState: StateFlow<SimpleTodoListUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(TodoListUiState())
+    val uiState: StateFlow<TodoListUiState> = _uiState.asStateFlow()
 
     init {
         loadTodoItems()
@@ -79,9 +79,9 @@ class SimpleTodoListViewModel @Inject constructor(
 }
 
 /**
- * 简化的UI状态
+ * UI状态
  */
-data class SimpleTodoListUiState(
+data class TodoListUiState(
     val todoItems: List<TodoItem> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null

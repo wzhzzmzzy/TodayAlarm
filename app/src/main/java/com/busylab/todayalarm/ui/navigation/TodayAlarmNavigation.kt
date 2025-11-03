@@ -11,7 +11,7 @@ import com.busylab.todayalarm.ui.screens.AddPlanScreen
 import com.busylab.todayalarm.ui.screens.EditPlanScreen
 import com.busylab.todayalarm.ui.screens.HomeScreen
 import com.busylab.todayalarm.ui.screens.PlanListScreen
-import com.busylab.todayalarm.ui.screens.SimpleTodoListScreen
+import com.busylab.todayalarm.ui.screens.WeekViewScreen
 
 @Composable
 fun TodayAlarmNavigation(
@@ -32,8 +32,8 @@ fun TodayAlarmNavigation(
                 onNavigateToPlanList = {
                     navController.navigate(Screen.PlanList.route)
                 },
-                onNavigateToTodoList = {
-                    navController.navigate(Screen.TodoList.route)
+                onNavigateToWeekView = {
+                    navController.navigate(Screen.WeekView.route)
                 }
             )
         }
@@ -80,9 +80,12 @@ fun TodayAlarmNavigation(
             )
         }
 
-        // 待办列表页面
-        composable(Screen.TodoList.route) {
-            SimpleTodoListScreen(
+        // 周视图页面
+        composable(Screen.WeekView.route) {
+            WeekViewScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
             )
         }
     }
@@ -103,8 +106,8 @@ fun NavHostController.navigateToEditPlan(planId: String) {
     navigate(Screen.EditPlan.createRoute(planId))
 }
 
-fun NavHostController.navigateToTodoList() {
-    navigate(Screen.TodoList.route)
+fun NavHostController.navigateToWeekView() {
+    navigate(Screen.WeekView.route)
 }
 
 fun NavHostController.navigateBack() {

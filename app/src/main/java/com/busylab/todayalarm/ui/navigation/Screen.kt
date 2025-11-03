@@ -31,6 +31,11 @@ sealed class Screen(val route: String) {
      */
     object TodoList : Screen("todo_list")
 
+    /**
+     * 周视图
+     */
+    object WeekView : Screen("week_view")
+
     companion object {
         /**
          * 获取所有路由
@@ -40,7 +45,8 @@ sealed class Screen(val route: String) {
             AddPlan.route,
             PlanList.route,
             EditPlan.route,
-            TodoList.route
+            TodoList.route,
+            WeekView.route
         )
     }
 }

@@ -1,4 +1,4 @@
-package com.busylab.todayalarm.ui.screens
+package com.busylab.todayalarm.ui.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,88 +16,90 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.busylab.todayalarm.domain.model.TodoItem
 import com.busylab.todayalarm.ui.theme.TodayAlarmTheme
-import com.busylab.todayalarm.ui.viewmodel.SimpleTodoListViewModel
+import com.busylab.todayalarm.ui.viewmodel.TodoListViewModel
+import com.busylab.todayalarm.ui.viewmodel.TodoListUiState
 import kotlinx.datetime.LocalDateTime
 
 /**
- * 简化的待办列表页面
- * 只展示所有待办事项和提供勾选完成功能
+ * 待办列表组件
+ * 与ViewModel耦合，负责处理数据获取和状态管理
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SimpleTodoListScreen(
+fun TodoList(
     modifier: Modifier = Modifier,
-    viewModel: SimpleTodoListViewModel = hiltViewModel()
+    viewModel: TodoListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Scaffold(
+    TodoListContent(
         modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "待办事项",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            when {
-                uiState.isLoading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
+        uiState = uiState,
+        onRetry = { viewModel.loadTodoItems() },
+        onCompleteToggle = { todoId -> viewModel.toggleComplete(todoId) }
+    )
+}
 
-                uiState.error != null -> {
-                    Column(
-                        modifier = Modifier.align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
+/**
+ * 待办列表内容组件
+ * 纯UI组件，不依赖ViewModel，便于测试和复用
+ */
+@Composable
+fun TodoListContent(
+    modifier: Modifier = Modifier,
+    uiState: TodoListUiState,
+    onRetry: () -> Unit,
+    onCompleteToggle: (String) -> Unit
+) {
+    Box(
+        modifier = modifier.fillMaxSize()
+    ) {
+        when {
+            uiState.isLoading -> {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+
+            uiState.error != null -> {
+                Column(
+                    modifier = Modifier.align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = uiState.error,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = onRetry
                     ) {
-                        Text(
-                            text = uiState.error ?: "未知错误",
-                            color = MaterialTheme.colorScheme.error
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = { viewModel.loadTodoItems() }
-                        ) {
-                            Text("重试")
-                        }
+                        Text("重试")
                     }
                 }
+            }
 
-                uiState.todoItems.isEmpty() -> {
-                    Text(
-                        text = "暂无待办事项",
-                        modifier = Modifier.align(Alignment.Center),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    )
-                }
+            uiState.todoItems.isEmpty() -> {
+                Text(
+                    text = "暂无待办事项",
+                    modifier = Modifier.align(Alignment.Center),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
+            }
 
-                else -> {
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(
-                            items = uiState.todoItems,
-                            key = { it.id }
-                        ) { todoItem ->
-                            SimpleTodoItemCard(
-                                todoItem = todoItem,
-                                onCompleteToggle = { viewModel.toggleComplete(todoItem.id) }
-                            )
-                        }
+            else -> {
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(
+                        items = uiState.todoItems,
+                        key = { it.id }
+                    ) { todoItem ->
+                        TodoItemCard(
+                            todoItem = todoItem,
+                            onCompleteToggle = { onCompleteToggle(todoItem.id) }
+                        )
                     }
                 }
             }
@@ -105,8 +107,11 @@ fun SimpleTodoListScreen(
     }
 }
 
+/**
+ * 待办事项卡片组件
+ */
 @Composable
-private fun SimpleTodoItemCard(
+private fun TodoItemCard(
     todoItem: TodoItem,
     onCompleteToggle: () -> Unit,
     modifier: Modifier = Modifier
@@ -201,10 +206,17 @@ private fun formatLocalDateTime(localDateTime: LocalDateTime): String {
     }
 }
 
+
 @Preview(showBackground = true)
 @Composable
-private fun SimpleTodoListScreenPreview() {
+private fun TodoListContentPreview() {
     TodayAlarmTheme {
-        SimpleTodoListScreen()
+        TodoListContent(
+            uiState = TodoListUiState(
+                todoItems = emptyList()
+            ),
+            onRetry = {},
+            onCompleteToggle = {}
+        )
     }
 }
