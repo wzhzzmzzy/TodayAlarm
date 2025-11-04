@@ -1,15 +1,12 @@
 package com.busylab.todayalarm.domain.usecase.repeat
 
-import com.busylab.todayalarm.domain.model.TodoItem
 import com.busylab.todayalarm.domain.model.Plan
-import com.busylab.todayalarm.domain.model.RepeatType
 import com.busylab.todayalarm.domain.exception.BusinessException
 import com.busylab.todayalarm.domain.model.RepeatRule
 import com.busylab.todayalarm.domain.repository.PlanRepository
 import com.busylab.todayalarm.domain.repository.TodoRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.datetime.*
-import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -23,19 +20,7 @@ class RepeatPlanProcessor @Inject constructor(
             val plan = planRepository.getPlanById(planId)
                 ?: return Result.failure(BusinessException.PlanNotFoundException(planId))
 
-            // 创建待办事项
             val currentTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-            val todoItem = TodoItem(
-                id = UUID.randomUUID().toString(),
-                planId = plan.id,
-                title = plan.title,
-                content = plan.content,
-                isCompleted = false,
-                triggerTime = plan.triggerTime,
-                completedAt = null,
-                createdAt = currentTime
-            )
-            todoRepository.insertTodoItem(todoItem)
 
             // 如果是重复计划，计算下次触发时间并更新
             if (plan.isRepeating) {

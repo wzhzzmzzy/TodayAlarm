@@ -21,7 +21,9 @@ import java.util.UUID
         Index(value = ["isCompleted"]),
         Index(value = ["triggerTime"]),
         Index(value = ["priority"]),
-        Index(value = ["category"])
+        Index(value = ["category"]),
+        Index(value = ["enableRepeating"]),
+        Index(value = ["isActive"])
     ]
 )
 data class TodoItem(
@@ -29,7 +31,7 @@ data class TodoItem(
     val id: String = UUID.randomUUID().toString(),
 
     // 关联信息
-    val planId: String,
+    val planId: String? = null, // 改为可选，支持独立待办
 
     // 基础信息
     val title: String,
@@ -61,5 +63,11 @@ data class TodoItem(
 
     // 扩展信息
     val metadata: String = "{}", // JSON格式存储扩展数据
-    val attachments: String = "[]" // JSON格式存储附件信息
+    val attachments: String = "[]", // JSON格式存储附件信息
+
+    // 新增重复设置字段
+    val enableRepeating: Boolean = false,
+    val repeatType: String = "NONE",
+    val repeatInterval: Int = 1,
+    val isActive: Boolean = true
 )

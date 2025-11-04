@@ -5,6 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.busylab.todayalarm.domain.model.Plan
 import com.busylab.todayalarm.domain.model.RepeatType
 import com.busylab.todayalarm.domain.repository.PlanRepository
+import com.busylab.todayalarm.domain.usecase.todo.GenerateDailyTodosUseCase
+import com.busylab.todayalarm.domain.usecase.sync.SyncTodoPlanUseCase
+import com.busylab.todayalarm.domain.manager.SyncStatusManager
 import com.busylab.todayalarm.system.alarm.AlarmScheduler
 import com.busylab.todayalarm.ui.state.HomeUiEvent
 import com.busylab.todayalarm.ui.state.HomeUiState
@@ -32,7 +35,10 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val planRepository: PlanRepository,
-    private val alarmScheduler: AlarmScheduler
+    private val alarmScheduler: AlarmScheduler,
+    private val generateDailyTodosUseCase: GenerateDailyTodosUseCase,
+    private val syncTodoPlanUseCase: SyncTodoPlanUseCase,
+    private val _syncStatusManager: SyncStatusManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -40,6 +46,12 @@ class HomeViewModel @Inject constructor(
 
     private val _uiEvent = MutableSharedFlow<HomeUiEvent>()
     val uiEvent: SharedFlow<HomeUiEvent> = _uiEvent.asSharedFlow()
+
+    // 暴露同步状态
+    val syncStatus = _syncStatusManager.syncStatus
+
+    // 暴露同步状态管理器供UI使用
+    val syncStatusManager: SyncStatusManager get() = _syncStatusManager
 
     init {
         loadData()
@@ -52,6 +64,9 @@ class HomeViewModel @Inject constructor(
             }
             HomeUiEvent.DebugNotification -> {
                 debugAlarm()
+            }
+            HomeUiEvent.SyncTodoPlan -> {
+                syncTodoPlan()
             }
             HomeUiEvent.NavigateBack -> {
                 // Handled by UI layer
@@ -124,6 +139,30 @@ class HomeViewModel @Inject constructor(
             } catch (e: Exception) {
                 _uiEvent.emit(HomeUiEvent.ShowError("安排调试闹钟失败: ${e.message}"))
             }
+        }
+    }
+
+    private fun generateDailyTodos() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+
+            generateDailyTodosUseCase(GenerateDailyTodosUseCase.Params())
+                .onSuccess { result ->
+                    _uiState.value = _uiState.value.copy(isLoading = false)
+                    _uiEvent.emit(HomeUiEvent.ShowSnackbar("生成了 ${result.createdCount} 个待办"))
+                }
+                .onFailure { e ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = "生成待办失败: ${e.message}"
+                    )
+                }
+        }
+    }
+
+    private fun syncTodoPlan() {
+        viewModelScope.launch {
+            syncTodoPlanUseCase()
         }
     }
 }

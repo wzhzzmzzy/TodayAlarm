@@ -7,11 +7,17 @@ import kotlinx.datetime.LocalDateTime
  */
 data class TodoItem(
     val id: String,
-    val planId: String,
+    val planId: String? = null, // 改为可选，支持独立待办
     val title: String,
     val content: String,
     val isCompleted: Boolean = false,
     val triggerTime: LocalDateTime,
     val completedAt: LocalDateTime? = null,
-    val createdAt: LocalDateTime
+    val createdAt: LocalDateTime,
+
+    // 新增重复设置字段
+    val enableRepeating: Boolean = false,
+    val repeatType: RepeatType = RepeatType.NONE,
+    val repeatInterval: Int = 1,
+    val isActive: Boolean = true
 )

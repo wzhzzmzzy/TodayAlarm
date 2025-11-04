@@ -3,9 +3,7 @@ package com.busylab.todayalarm.system.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.busylab.todayalarm.domain.model.TodoItem
 import com.busylab.todayalarm.domain.repository.PlanRepository
-import com.busylab.todayalarm.domain.repository.TodoRepository
 import com.busylab.todayalarm.system.alarm.AlarmSchedulerImpl
 import com.busylab.todayalarm.system.notification.NotificationManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -19,7 +17,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
-import java.util.UUID
 import javax.inject.Inject
 
 /**
@@ -27,9 +24,6 @@ import javax.inject.Inject
  */
 @AndroidEntryPoint
 class AlarmReceiver : BroadcastReceiver() {
-
-    @Inject
-    lateinit var todoRepository: TodoRepository
 
     @Inject
     lateinit var planRepository: PlanRepository
@@ -66,25 +60,10 @@ class AlarmReceiver : BroadcastReceiver() {
     ) {
         val currentTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
 
-        // 创建待办事项
-        val todoItem = TodoItem(
-            id = UUID.randomUUID().toString(),
-            planId = planId,
-            title = title,
-            content = content,
-            isCompleted = false,
-            triggerTime = currentTime,
-            completedAt = null,
-            createdAt = currentTime
-        )
+        // 只显示通知，不自动创建 TodoItem
+        notificationManager.showAlarmNotification(title, content, planId)
 
-        // 保存到数据库
-        todoRepository.insertTodoItem(todoItem)
-
-        // 显示通知
-        notificationManager.showAlarmNotification(todoItem)
-
-        // 处理重复提醒
+        // 处理重复提醒（保持现有逻辑）
         if (isRepeating) {
             val plan = planRepository.getPlanById(planId)
             plan?.let { planData ->

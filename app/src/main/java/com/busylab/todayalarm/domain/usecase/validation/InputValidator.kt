@@ -44,6 +44,46 @@ object InputValidator {
         }
     }
 
+    /**
+     * 验证 TodoItem 相关数据
+     */
+    fun validateTodoItem(
+        title: String,
+        content: String,
+        triggerTime: LocalDateTime,
+        enableRepeating: Boolean,
+        repeatType: RepeatType,
+        repeatInterval: Int
+    ): ValidationResult {
+        // 标题验证
+        validatePlanTitle(title).let { result ->
+            if (result is ValidationResult.Error) return result
+        }
+
+        // 内容验证
+        if (content.length > 500) {
+            return ValidationResult.Error("内容不能超过500个字符")
+        }
+
+        // 时间验证
+        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        if (triggerTime < now) {
+            return ValidationResult.Error("触发时间不能早于当前时间")
+        }
+
+        // 重复设置验证
+        if (enableRepeating) {
+            if (repeatType == RepeatType.NONE) {
+                return ValidationResult.Error("启用重复时不能选择不重复")
+            }
+            validateRepeatInterval(repeatInterval, repeatType).let { result ->
+                if (result is ValidationResult.Error) return result
+            }
+        }
+
+        return ValidationResult.Success
+    }
+
     sealed class ValidationResult {
         object Success : ValidationResult()
         data class Error(val message: String) : ValidationResult()

@@ -25,7 +25,7 @@ object DatabaseModule {
             AppDatabase.DATABASE_NAME
         )
             .addMigrations(TodoMigrations.MIGRATION_1_2)
-            .fallbackToDestructiveMigration(false)
+            .fallbackToDestructiveMigration(true) // 开发阶段允许销毁重建
             .build()
     }
 

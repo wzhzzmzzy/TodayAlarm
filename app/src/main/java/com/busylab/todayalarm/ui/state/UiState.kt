@@ -97,6 +97,7 @@ sealed interface UiEvent {
 sealed interface HomeUiEvent : UiEvent {
     object RefreshData : HomeUiEvent
     object DebugNotification : HomeUiEvent
+    object SyncTodoPlan : HomeUiEvent
     data class ShowSnackbar(val message: String) : HomeUiEvent
     data class ShowError(val error: String) : HomeUiEvent
     object NavigateBack : HomeUiEvent

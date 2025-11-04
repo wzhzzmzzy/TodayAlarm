@@ -5,6 +5,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,6 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.busylab.todayalarm.ui.components.TodoList
+import com.busylab.todayalarm.ui.components.status.SyncStatusIndicator
 import com.busylab.todayalarm.ui.state.HomeUiEvent
 import com.busylab.todayalarm.ui.theme.TodayAlarmTheme
 import com.busylab.todayalarm.ui.viewmodel.HomeViewModel
@@ -21,7 +24,7 @@ import com.busylab.todayalarm.ui.viewmodel.HomeViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onNavigateToAddPlan: () -> Unit,
+    onNavigateToAddTodo: () -> Unit,
     onNavigateToPlanList: () -> Unit,
     onNavigateToWeekView: () -> Unit,
     modifier: Modifier = Modifier,
@@ -58,6 +61,16 @@ fun HomeScreen(
                 },
                 actions = {
                     IconButton(
+                        onClick = {
+                            viewModel.onEvent(HomeUiEvent.SyncTodoPlan)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Sync,
+                            contentDescription = "同步待办计划"
+                        )
+                    }
+                    IconButton(
                         onClick = onNavigateToWeekView
                     ) {
                         Icon(
@@ -78,22 +91,35 @@ fun HomeScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onNavigateToAddPlan,
+                onClick = onNavigateToAddTodo,
                 elevation = FloatingActionButtonDefaults.elevation(8.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "添加计划"
+                    contentDescription = "添加待办"
                 )
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
-        TodoList(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-        )
+        ) {
+            // 同步状态指示器
+            SyncStatusIndicator(
+                syncStatusManager = viewModel.syncStatusManager,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+
+            // 待办列表
+            TodoList(
+                modifier = Modifier.fillMaxSize()
+            )
+        }
     }
 }
 
@@ -103,7 +129,7 @@ fun HomeScreen(
 private fun HomeScreenPreview() {
     TodayAlarmTheme {
         HomeScreen(
-            onNavigateToAddPlan = {},
+            onNavigateToAddTodo = {},
             onNavigateToPlanList = {},
             onNavigateToWeekView = {}
         )
