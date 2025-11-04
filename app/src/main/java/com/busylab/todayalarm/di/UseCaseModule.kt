@@ -7,6 +7,8 @@ import com.busylab.todayalarm.domain.usecase.plan.CreatePlanFromTodoUseCase
 import com.busylab.todayalarm.domain.usecase.todo.CreateTodoFromNotificationUseCase
 import com.busylab.todayalarm.domain.usecase.todo.CreateTodoWithPlanUseCase
 import com.busylab.todayalarm.domain.usecase.todo.GenerateDailyTodosUseCase
+import com.busylab.todayalarm.domain.usecase.todo.GetTodoItemByIdUseCase
+import com.busylab.todayalarm.domain.usecase.todo.UpdateTodoItemUseCase
 import com.busylab.todayalarm.domain.usecase.sync.SyncTodoPlanUseCase
 import com.busylab.todayalarm.domain.manager.SyncStatusManager
 import com.busylab.todayalarm.domain.handler.ErrorHandler
@@ -75,5 +77,21 @@ object UseCaseModule {
             planRepository,
             todoItemRepository
         )
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetTodoItemByIdUseCase(
+        todoItemRepository: TodoItemRepository
+    ): GetTodoItemByIdUseCase {
+        return GetTodoItemByIdUseCase(todoItemRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUpdateTodoItemUseCase(
+        todoItemRepository: TodoItemRepository
+    ): UpdateTodoItemUseCase {
+        return UpdateTodoItemUseCase(todoItemRepository)
     }
 }

@@ -58,17 +58,28 @@ import kotlinx.datetime.toLocalDateTime
 fun AddTodoScreen(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
+    todoId: String? = null,
     viewModel: AddTodoViewModel = hiltViewModel()
 ) {
+    // 如果有todoId，表示是编辑模式
+    val isEditMode = todoId != null
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // 编辑模式初始化
+    LaunchedEffect(todoId) {
+        if (todoId != null) {
+            viewModel.loadTodoForEdit(todoId)
+        }
+    }
 
     // 处理UI事件
     LaunchedEffect(viewModel.uiEvent) {
         viewModel.uiEvent.collect { event ->
             when (event) {
                 is AddTodoUiEvent.TodoCreated -> {
-                    snackbarHostState.showSnackbar("待办事项创建成功")
+                    val message = if (isEditMode) "待办事项更新成功" else "待办事项创建成功"
+                    snackbarHostState.showSnackbar(message)
                     onNavigateBack()
                 }
                 is AddTodoUiEvent.Error -> {
@@ -84,7 +95,7 @@ fun AddTodoScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "添加待办事项",
+                        text = if (isEditMode) "编辑待办事项" else "添加待办事项",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -103,13 +114,14 @@ fun AddTodoScreen(
     ) { paddingValues ->
         AddTodoContent(
             uiState = uiState,
+            isEditMode = isEditMode,
             onTitleChanged = viewModel::updateTitle,
             onContentChanged = viewModel::updateContent,
             onTriggerTimeChanged = viewModel::updateTriggerTime,
             onEnableRepeatingChanged = viewModel::updateEnableRepeating,
             onRepeatTypeChanged = viewModel::updateRepeatType,
             onRepeatIntervalChanged = viewModel::updateRepeatInterval,
-            onSave = viewModel::createTodo,
+            onSave = if (isEditMode) viewModel::updateTodo else viewModel::createTodo,
             modifier = Modifier.padding(paddingValues)
         )
     }
@@ -118,6 +130,7 @@ fun AddTodoScreen(
 @Composable
 private fun AddTodoContent(
     uiState: com.busylab.todayalarm.ui.state.AddTodoUiState,
+    isEditMode: Boolean,
     onTitleChanged: (String) -> Unit,
     onContentChanged: (String) -> Unit,
     onTriggerTimeChanged: (kotlinx.datetime.LocalDateTime) -> Unit,
@@ -195,7 +208,7 @@ private fun AddTodoContent(
                 if (uiState.isLoading) {
                     CircularProgressIndicator()
                 } else {
-                    Text("保存")
+                    Text(if (isEditMode) "更新" else "保存")
                 }
             }
         }

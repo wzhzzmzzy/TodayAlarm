@@ -27,6 +27,7 @@ fun HomeScreen(
     onNavigateToAddTodo: () -> Unit,
     onNavigateToPlanList: () -> Unit,
     onNavigateToWeekView: () -> Unit,
+    onNavigateToEditTodo: (String) -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -117,7 +118,8 @@ fun HomeScreen(
 
             // 待办列表
             TodoList(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                onEditTodo = onNavigateToEditTodo
             )
         }
     }
@@ -131,7 +133,8 @@ private fun HomeScreenPreview() {
         HomeScreen(
             onNavigateToAddTodo = {},
             onNavigateToPlanList = {},
-            onNavigateToWeekView = {}
+            onNavigateToWeekView = {},
+            onNavigateToEditTodo = {}
         )
     }
 }

@@ -15,6 +15,11 @@ sealed class Screen(val route: String) {
     object AddPlan : Screen("add_plan")
 
     /**
+     * 添加待办
+     */
+    object AddTodo : Screen("add_todo")
+
+    /**
      * 计划列表
      */
     object PlanList : Screen("plan_list")
@@ -24,6 +29,13 @@ sealed class Screen(val route: String) {
      */
     object EditPlan : Screen("edit_plan/{planId}") {
         fun createRoute(planId: String) = "edit_plan/$planId"
+    }
+
+    /**
+     * 编辑待办
+     */
+    object EditTodo : Screen("edit_todo/{todoId}") {
+        fun createRoute(todoId: String) = "edit_todo/$todoId"
     }
 
     /**
@@ -43,8 +55,10 @@ sealed class Screen(val route: String) {
         fun getAllRoutes(): List<String> = listOf(
             Home.route,
             AddPlan.route,
+            AddTodo.route,
             PlanList.route,
             EditPlan.route,
+            EditTodo.route,
             TodoList.route,
             WeekView.route
         )
@@ -56,4 +70,5 @@ sealed class Screen(val route: String) {
  */
 object NavigationArgs {
     const val PLAN_ID = "planId"
+    const val TODO_ID = "todoId"
 }

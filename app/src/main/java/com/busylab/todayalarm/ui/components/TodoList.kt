@@ -1,12 +1,16 @@
 package com.busylab.todayalarm.ui.components
 
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,6 +31,7 @@ import kotlinx.datetime.LocalDateTime
 @Composable
 fun TodoList(
     modifier: Modifier = Modifier,
+    onEditTodo: (String) -> Unit = {},
     viewModel: TodoListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -35,7 +40,8 @@ fun TodoList(
         modifier = modifier,
         uiState = uiState,
         onRetry = { viewModel.loadTodoItems() },
-        onCompleteToggle = { todoId -> viewModel.toggleComplete(todoId) }
+        onCompleteToggle = { todoId -> viewModel.toggleComplete(todoId) },
+        onEditTodo = onEditTodo
     )
 }
 
@@ -48,7 +54,8 @@ fun TodoListContent(
     modifier: Modifier = Modifier,
     uiState: TodoListUiState,
     onRetry: () -> Unit,
-    onCompleteToggle: (String) -> Unit
+    onCompleteToggle: (String) -> Unit,
+    onEditTodo: (String) -> Unit = {}
 ) {
     Box(
         modifier = modifier.fillMaxSize()
@@ -98,7 +105,8 @@ fun TodoListContent(
                     ) { todoItem ->
                         TodoItemCard(
                             todoItem = todoItem,
-                            onCompleteToggle = { onCompleteToggle(todoItem.id) }
+                            onCompleteToggle = { onCompleteToggle(todoItem.id) },
+                            onEditTodo = { onEditTodo(todoItem.id) }
                         )
                     }
                 }
@@ -114,10 +122,17 @@ fun TodoListContent(
 private fun TodoItemCard(
     todoItem: TodoItem,
     onCompleteToggle: () -> Unit,
+    onEditTodo: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    var isFocused by remember { mutableStateOf(false) }
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .focusable()
+            .onFocusChanged { focusState ->
+                isFocused = focusState.isFocused
+            },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -190,6 +205,24 @@ private fun TodoItemCard(
                     }
                 }
             }
+
+            // 编辑按钮（Focus时显示）
+            androidx.compose.animation.AnimatedVisibility(
+                visible = isFocused,
+                enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.scaleIn(),
+                exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.scaleOut()
+            ) {
+                IconButton(
+                    onClick = onEditTodo,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "编辑待办",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
         }
     }
 }
@@ -216,7 +249,8 @@ private fun TodoListContentPreview() {
                 todoItems = emptyList()
             ),
             onRetry = {},
-            onCompleteToggle = {}
+            onCompleteToggle = {},
+            onEditTodo = {}
         )
     }
 }
