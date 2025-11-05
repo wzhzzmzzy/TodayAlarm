@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.busylab.todayalarm.domain.model.ModelMapper.toUiModel
 import com.busylab.todayalarm.domain.usecase.calendar.GetWeekCalendarUseCase
-import com.busylab.todayalarm.domain.usecase.todo.GetTodoItemsUseCaseNew
+import com.busylab.todayalarm.domain.usecase.todo.GetTodoItemsUseCase
 import com.busylab.todayalarm.domain.usecase.todo.TodoFilter
 import com.busylab.todayalarm.ui.state.WeekViewUiState
 import com.busylab.todayalarm.ui.state.WeekViewUiEvent
@@ -31,7 +31,7 @@ import javax.inject.Inject
 @HiltViewModel
 class WeekViewViewModel @Inject constructor(
     private val getWeekCalendarUseCase: GetWeekCalendarUseCase,
-    private val getTodoItemsUseCase: GetTodoItemsUseCaseNew
+    private val getTodoItemsUseCase: GetTodoItemsUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(WeekViewUiState())
@@ -73,7 +73,7 @@ class WeekViewViewModel @Inject constructor(
             try {
                 combine(
                     getWeekCalendarUseCase(currentWeekOffset),
-                    getTodoItemsUseCase(GetTodoItemsUseCaseNew.Params(filter = TodoFilter.PENDING))
+                    getTodoItemsUseCase(GetTodoItemsUseCase.Params(filter = TodoFilter.PENDING))
                 ) { weekCalendar, allTodos ->
                     val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
                     val selectedDate = _uiState.value.selectedDate ?: today
@@ -116,7 +116,7 @@ class WeekViewViewModel @Inject constructor(
             _uiState.value = currentState.copy(selectedDate = date)
 
             // 获取选中日期的待办事项
-            getTodoItemsUseCase(GetTodoItemsUseCaseNew.Params(filter = TodoFilter.PENDING))
+            getTodoItemsUseCase(GetTodoItemsUseCase.Params(filter = TodoFilter.PENDING))
                 .catch { error ->
                     _uiEvent.emit(WeekViewUiEvent.ShowError("获取待办事项失败: ${error.message}"))
                 }

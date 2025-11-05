@@ -4,6 +4,7 @@ import com.busylab.todayalarm.domain.repository.PlanRepository
 import com.busylab.todayalarm.domain.repository.TodoRepository
 import com.busylab.todayalarm.domain.repository.TodoItemRepository
 import com.busylab.todayalarm.domain.usecase.plan.CreatePlanFromTodoUseCase
+import com.busylab.todayalarm.domain.coordinator.TodoPlanCoordinator
 import com.busylab.todayalarm.domain.usecase.todo.CreateTodoFromNotificationUseCase
 import com.busylab.todayalarm.domain.usecase.todo.CreateTodoWithPlanUseCase
 import com.busylab.todayalarm.domain.usecase.todo.GenerateDailyTodosUseCase
@@ -47,11 +48,20 @@ object UseCaseModule {
 
     @Provides
     @Singleton
-    fun provideCreateTodoWithPlanUseCase(
+    fun provideTodoPlanCoordinator(
         todoRepository: TodoRepository,
-        createPlanFromTodoUseCase: CreatePlanFromTodoUseCase
+        planRepository: PlanRepository,
+        alarmScheduler: AlarmScheduler
+    ): TodoPlanCoordinator {
+        return TodoPlanCoordinator(todoRepository, planRepository, alarmScheduler)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCreateTodoWithPlanUseCase(
+        todoPlanCoordinator: TodoPlanCoordinator
     ): CreateTodoWithPlanUseCase {
-        return CreateTodoWithPlanUseCase(todoRepository, createPlanFromTodoUseCase)
+        return CreateTodoWithPlanUseCase(todoPlanCoordinator)
     }
 
     @Provides

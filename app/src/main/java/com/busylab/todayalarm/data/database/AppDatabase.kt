@@ -7,14 +7,14 @@ import com.busylab.todayalarm.data.database.dao.PlanDao
 import com.busylab.todayalarm.data.database.dao.TodoItemDao
 import com.busylab.todayalarm.data.database.entities.Plan
 import com.busylab.todayalarm.data.database.entities.TodoItem
-import com.busylab.todayalarm.data.database.converters.TodoConverters
+import com.busylab.todayalarm.data.database.converters.DatabaseConverters
 
 @Database(
     entities = [Plan::class, TodoItem::class],
     version = 2, // 版本升级
     exportSchema = true
 )
-@TypeConverters(Converters::class, TodoConverters::class)
+@TypeConverters(DatabaseConverters::class)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun planDao(): PlanDao

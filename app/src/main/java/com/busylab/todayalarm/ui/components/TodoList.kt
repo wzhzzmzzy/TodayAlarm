@@ -125,14 +125,9 @@ private fun TodoItemCard(
     onEditTodo: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    var isFocused by remember { mutableStateOf(false) }
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .focusable()
-            .onFocusChanged { focusState ->
-                isFocused = focusState.isFocused
-            },
+            .fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -206,22 +201,16 @@ private fun TodoItemCard(
                 }
             }
 
-            // 编辑按钮（Focus时显示）
-            androidx.compose.animation.AnimatedVisibility(
-                visible = isFocused,
-                enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.scaleIn(),
-                exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.scaleOut()
+            // 编辑按钮
+            IconButton(
+                onClick = onEditTodo,
+                modifier = Modifier.size(40.dp)
             ) {
-                IconButton(
-                    onClick = onEditTodo,
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "编辑待办",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "编辑待办",
+                    tint = MaterialTheme.colorScheme.primary
+                )
             }
         }
     }

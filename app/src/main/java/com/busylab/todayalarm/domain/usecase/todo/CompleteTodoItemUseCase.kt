@@ -8,14 +8,15 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 import javax.inject.Inject
 
-class CompleteTodoItemUseCaseNew @Inject constructor(
+class CompleteTodoItemUseCase @Inject constructor(
     private val todoRepository: TodoItemRepository
 ) {
 
     data class Params(
         val todoId: String,
         val completedAt: Long = System.currentTimeMillis(),
-        val notes: String? = null
+        val notes: String? = null,
+        val forceComplete: Boolean = false
     )
 
     suspend operator fun invoke(params: Params): Result<Unit> {
@@ -26,11 +27,16 @@ class CompleteTodoItemUseCaseNew @Inject constructor(
 
             // 检查是否已完成
             if (todoItem.isCompleted()) {
-                throw IllegalStateException("待办事项已完成")
+                // 如果已完成且不是强制完成，则切换为未完成
+                if (!params.forceComplete) {
+                    todoRepository.uncompleteTodoItem(params.todoId)
+                } else {
+                    throw IllegalStateException("待办事项已完成")
+                }
+            } else {
+                // 如果未完成，则标记为已完成
+                todoRepository.completeTodoItem(params.todoId)
             }
-
-            // 更新完成状态
-            todoRepository.completeTodoItem(params.todoId)
 
             // TODO: 取消相关通知
             // notificationManager.cancelNotification(todoItem)

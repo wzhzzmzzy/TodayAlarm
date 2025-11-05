@@ -3,8 +3,8 @@ package com.busylab.todayalarm.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.busylab.todayalarm.domain.model.TodoItem
-import com.busylab.todayalarm.domain.usecase.todo.GetTodoItemsUseCaseNew
-import com.busylab.todayalarm.domain.usecase.todo.CompleteTodoItemUseCaseNew
+import com.busylab.todayalarm.domain.usecase.todo.GetTodoItemsUseCase
+import com.busylab.todayalarm.domain.usecase.todo.CompleteTodoItemUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -16,8 +16,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class TodoListViewModel @Inject constructor(
-    private val getTodoItemsUseCase: GetTodoItemsUseCaseNew,
-    private val completeTodoItemUseCase: CompleteTodoItemUseCaseNew
+    private val getTodoItemsUseCase: GetTodoItemsUseCase,
+    private val completeTodoItemUseCase: CompleteTodoItemUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TodoListUiState())
@@ -32,14 +32,15 @@ class TodoListViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, error = null) }
 
             try {
-                getTodoItemsUseCase(GetTodoItemsUseCaseNew.Params())
+                getTodoItemsUseCase(GetTodoItemsUseCase.Params())
                     .collect { todoItems ->
                         _uiState.update {
                             it.copy(
-                                todoItems = todoItems.sortedWith(
-                                    compareBy<TodoItem> { item -> item.isCompleted }
-                                        .thenByDescending { item -> item.triggerTime }
-                                ),
+                                todoItems = todoItems
+//                                    .sortedWith(
+//                                    compareBy<TodoItem> { item -> item.isCompleted }
+//                                        .thenByDescending { item -> item.triggerTime })
+                                ,
                                 isLoading = false,
                                 error = null
                             )
@@ -59,7 +60,7 @@ class TodoListViewModel @Inject constructor(
     fun toggleComplete(todoId: String) {
         viewModelScope.launch {
             try {
-                completeTodoItemUseCase(CompleteTodoItemUseCaseNew.Params(todoId))
+                completeTodoItemUseCase(CompleteTodoItemUseCase.Params(todoId))
                     .onSuccess {
                         // 重新加载数据以更新状态
                         loadTodoItems()

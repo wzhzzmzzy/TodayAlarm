@@ -78,8 +78,7 @@ fun AddTodoScreen(
         viewModel.uiEvent.collect { event ->
             when (event) {
                 is AddTodoUiEvent.TodoCreated -> {
-                    val message = if (isEditMode) "待办事项更新成功" else "待办事项创建成功"
-                    snackbarHostState.showSnackbar(message)
+                    // 直接返回上一页，不显示提示信息
                     onNavigateBack()
                 }
                 is AddTodoUiEvent.Error -> {

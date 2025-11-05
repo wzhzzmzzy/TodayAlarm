@@ -8,11 +8,10 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.busylab.todayalarm.ui.screens.AddPlanScreen
 import com.busylab.todayalarm.ui.screens.AddTodoScreen
-import com.busylab.todayalarm.ui.screens.EditPlanScreen
 import com.busylab.todayalarm.ui.screens.HomeScreen
 import com.busylab.todayalarm.ui.screens.PlanListScreen
+import com.busylab.todayalarm.ui.screens.PlanScreen
 import com.busylab.todayalarm.ui.screens.WeekViewScreen
 
 @Composable
@@ -43,12 +42,24 @@ fun TodayAlarmNavigation(
             )
         }
 
-        // 添加计划页面
+        // 添加/编辑计划页面 (统一)
         composable(Screen.AddPlan.route) {
-            AddPlanScreen(
-                onNavigateBack = {
-                    navController.handleBackNavigation()
-                }
+            PlanScreen(
+                planId = null,
+                onNavigateBack = { navController.handleBackNavigation() }
+            )
+        }
+
+        composable(
+            route = Screen.EditPlan.route,
+            arguments = listOf(
+                navArgument(NavigationArgs.PLAN_ID) { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val planId = backStackEntry.arguments?.getString(NavigationArgs.PLAN_ID)
+            PlanScreen(
+                planId = planId,
+                onNavigateBack = { navController.handleBackNavigation() }
             )
         }
 
@@ -63,24 +74,6 @@ fun TodayAlarmNavigation(
                 },
                 onNavigateToEditPlan = { planId ->
                     navController.navigate(Screen.EditPlan.createRoute(planId))
-                }
-            )
-        }
-
-        // 编辑计划页面
-        composable(
-            route = Screen.EditPlan.route,
-            arguments = listOf(
-                navArgument(NavigationArgs.PLAN_ID) {
-                    type = NavType.StringType
-                }
-            )
-        ) { backStackEntry ->
-            val planId = backStackEntry.arguments?.getString(NavigationArgs.PLAN_ID) ?: ""
-            EditPlanScreen(
-                planId = planId,
-                onNavigateBack = {
-                    navController.handleBackNavigation()
                 }
             )
         }

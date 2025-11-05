@@ -1,6 +1,7 @@
 package com.busylab.todayalarm.data.database.converters
 
 import androidx.room.TypeConverter
+import com.busylab.todayalarm.data.database.entities.RepeatType
 import com.busylab.todayalarm.data.database.entities.TodoStatus
 import com.busylab.todayalarm.data.database.entities.TodoPriority
 import com.busylab.todayalarm.data.database.entities.TodoCategory
@@ -11,11 +12,31 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
 
-class TodoConverters {
+/**
+ * 统一的数据库类型转换器
+ * 合并了原来的 Converters 和 TodoConverters 功能
+ */
+class DatabaseConverters {
 
     private val json = Json { ignoreUnknownKeys = true }
 
-    // ==================== 枚举转换 ====================
+    // ==================== RepeatType转换 ====================
+
+    @TypeConverter
+    fun fromRepeatType(repeatType: RepeatType): String {
+        return repeatType.name
+    }
+
+    @TypeConverter
+    fun toRepeatType(repeatType: String): RepeatType {
+        return try {
+            RepeatType.valueOf(repeatType)
+        } catch (e: IllegalArgumentException) {
+            RepeatType.NONE
+        }
+    }
+
+    // ==================== TodoStatus转换 ====================
 
     @TypeConverter
     fun fromTodoStatus(status: TodoStatus): String = status.name
@@ -28,6 +49,8 @@ class TodoConverters {
             TodoStatus.PENDING
         }
 
+    // ==================== TodoPriority转换 ====================
+
     @TypeConverter
     fun fromTodoPriority(priority: TodoPriority): String = priority.name
 
@@ -38,6 +61,8 @@ class TodoConverters {
         } catch (e: IllegalArgumentException) {
             TodoPriority.NORMAL
         }
+
+    // ==================== TodoCategory转换 ====================
 
     @TypeConverter
     fun fromTodoCategory(category: TodoCategory): String = category.name

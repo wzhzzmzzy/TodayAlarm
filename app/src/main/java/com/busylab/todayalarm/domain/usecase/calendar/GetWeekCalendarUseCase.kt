@@ -7,7 +7,7 @@ import com.busylab.todayalarm.domain.model.PlanUiModel
 import com.busylab.todayalarm.domain.model.TodoItem
 import com.busylab.todayalarm.domain.model.WeekCalendarModel
 import com.busylab.todayalarm.domain.usecase.plan.GetPlansUseCase
-import com.busylab.todayalarm.domain.usecase.todo.GetTodoItemsUseCaseNew
+import com.busylab.todayalarm.domain.usecase.todo.GetTodoItemsUseCase
 import com.busylab.todayalarm.domain.usecase.todo.TodoFilter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -18,13 +18,13 @@ import javax.inject.Singleton
 @Singleton
 class GetWeekCalendarUseCase @Inject constructor(
     private val getPlansUseCase: GetPlansUseCase,
-    private val getTodoItemsUseCase: GetTodoItemsUseCaseNew,
+    private val getTodoItemsUseCase: GetTodoItemsUseCase,
     private val userPreferencesDataStore: UserPreferencesDataStore
 ) {
     operator fun invoke(weekOffset: Int = 0): Flow<WeekCalendarModel> {
         return combine(
             getPlansUseCase.getPlansForWeek(weekOffset),
-            getTodoItemsUseCase(GetTodoItemsUseCaseNew.Params(filter = TodoFilter.ALL)),
+            getTodoItemsUseCase(GetTodoItemsUseCase.Params(filter = TodoFilter.ALL)),
             userPreferencesDataStore.userPreferences
         ) { plans, todoItems, preferences ->
             createWeekCalendarModel(plans, todoItems, weekOffset, preferences)
