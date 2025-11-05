@@ -47,7 +47,7 @@ fun TodayAlarmNavigation(
         composable(Screen.AddPlan.route) {
             AddPlanScreen(
                 onNavigateBack = {
-                    navController.popBackStack()
+                    navController.handleBackNavigation()
                 }
             )
         }
@@ -56,7 +56,7 @@ fun TodayAlarmNavigation(
         composable(Screen.PlanList.route) {
             PlanListScreen(
                 onNavigateBack = {
-                    navController.popBackStack()
+                    navController.handleBackNavigation()
                 },
                 onNavigateToAddPlan = {
                     navController.navigate(Screen.AddPlan.route)
@@ -80,7 +80,7 @@ fun TodayAlarmNavigation(
             EditPlanScreen(
                 planId = planId,
                 onNavigateBack = {
-                    navController.popBackStack()
+                    navController.handleBackNavigation()
                 }
             )
         }
@@ -89,7 +89,7 @@ fun TodayAlarmNavigation(
         composable(Screen.WeekView.route) {
             WeekViewScreen(
                 onNavigateBack = {
-                    navController.popBackStack()
+                    navController.handleBackNavigation()
                 }
             )
         }
@@ -98,7 +98,7 @@ fun TodayAlarmNavigation(
         composable(Screen.AddTodo.route) {
             AddTodoScreen(
                 onNavigateBack = {
-                    navController.popBackStack()
+                    navController.handleBackNavigation()
                 }
             )
         }
@@ -116,7 +116,7 @@ fun TodayAlarmNavigation(
             AddTodoScreen(
                 todoId = todoId,
                 onNavigateBack = {
-                    navController.popBackStack()
+                    navController.handleBackNavigation()
                 }
             )
         }
@@ -150,8 +150,20 @@ fun NavHostController.navigateToWeekView() {
     navigate(Screen.WeekView.route)
 }
 
-fun NavHostController.navigateBack() {
+/**
+ * 安全的返回导航处理函数
+ * 检查是否有可返回的页面，如果有则执行返回操作
+ */
+fun NavHostController.handleBackNavigation(): Boolean {
     val currentRoute = currentBackStackEntry?.destination?.route
-    Log.i("Navigation", "popBackStack from $currentRoute")
-    popBackStack()
+    val previousEntry = previousBackStackEntry
+
+    return if (previousEntry != null) {
+        Log.i("Navigation", "popBackStack from $currentRoute to ${previousEntry.destination.route}")
+        popBackStack()
+        true
+    } else {
+        Log.i("Navigation", "No previous entry to pop from $currentRoute")
+        false
+    }
 }

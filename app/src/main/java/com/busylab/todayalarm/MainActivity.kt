@@ -3,14 +3,17 @@ package com.busylab.todayalarm
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
@@ -47,7 +50,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             TodayAlarmTheme {
                 if (permissionState.allPermissionsGranted) {
-                    TodayAlarmApp()
+                    TodayAlarmApp(this)
                 } else {
                     PermissionRequestScreen(
                         permissionState = permissionState,
@@ -95,19 +98,27 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun TodayAlarmApp() {
+fun TodayAlarmApp(activity: MainActivity?) {
     val navController = rememberNavController()
 
     TodayAlarmNavigation(
         navController = navController,
         modifier = Modifier.fillMaxSize()
     )
+
+    BackHandler {
+        if (navController.previousBackStackEntry != null) {
+            navController.popBackStack()
+        } else {
+            activity?.finish()
+        }
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun TodayAlarmAppPreview() {
     TodayAlarmTheme {
-        TodayAlarmApp()
+        TodayAlarmApp(null)
     }
 }
